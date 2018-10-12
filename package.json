@@ -1,0 +1,20 @@
+{
+	"name": "Sprint-Challenge-Node-Express",
+	"version": "1.0.0",
+	"description": "## Assignments",
+	"main": "index.js",
+	"scripts": {
+		"start": "nodemon index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/micah-shrak/Sprint-Challenge-Node-Express.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/micah-shrak/Sprint-Challenge-Node-Express/issues"
+	},
+	"homepage": "https://github.com/micah-shrak/Sprint-Challenge-Node-Express#readme"
+}
