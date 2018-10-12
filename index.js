@@ -14,6 +14,13 @@ const server = express();
 server.use(cors()); // Use cors to connect from react
 server.use(express.json()); // middleware
 
+/* const id = req.params.id;
+const projectName = req.body.name;
+const projectDesc = req.body.description;
+const projectComp = req.body.completed;
+const newProject = { projectName, projectDesc, projectComp };
+const updateProject = { projectName, projectDesc, projectComp }; */
+
 // Request / route handler
 server.get('/', (req, res) => {
 	res.send('<h1>Say Something!!</h1>');
@@ -37,12 +44,8 @@ server.get('/api/projects', (req, res) => {
 });
 
 server.post('/api/projects', (req, res) => {
-	const projectName = req.body.name;
-	const projectDesc = req.body.description;
-	const projectComp = req.body.completed;
-	const newProject = { projectName, projectDesc, projectComp };
-
-	if (!newProject.projectName || !newProject.projectDesc) {
+	const newProject = req.body;
+	if (!newProject.name || !newProject.description) {
 		return res
 			.status(400)
 			.send({ Error: 'Missing project name or project description.' });
@@ -51,9 +54,7 @@ server.post('/api/projects', (req, res) => {
 	projectDB
 		.insert(newProject)
 		.then((project) => {
-			projectDB.get(project.id).then((project) => {
-				return res.status(201).json(project);
-			});
+			return res.status(201).json(project);
 		})
 		.catch(() => {
 			return res.status(500).json({ Error: 'Error while saving project.' });
@@ -81,21 +82,16 @@ server.delete('/api/projects/:id', (req, res) => {
 
 server.put('/api/projects/:id', (req, res) => {
 	const id = req.params.id;
-	const projectName = req.body.name;
-	const projectDesc = req.body.description;
-	const projectComp = req.body.completed;
-	const updateProject = { projectName, projectDesc, projectComp };
+	const updateProject = req.body;
 
 	if (!id) {
 		return response
 			.status(404)
 			.send({ Error: `Project with this ID ${id} is not found` });
-	} else if (!updatedProject.name || !updatedProject.description) {
-		return response
-			.status(400)
-			.send({
-				Error: 'Project name or description is missing please correct.',
-			});
+	} else if (!updateProject.name || !updateProject.description) {
+		return res.status(400).send({
+			Error: 'Project name or description is missing please correct.',
+		});
 	}
 
 	projectDB
@@ -136,4 +132,66 @@ server.get('/api/actions/:id', (req, res) => {
 				.status(500)
 				.json({ Error: 'Unable to get action information.' });
 		});
+});
+
+server.get('/api/projects/:id/actions', (req, res) => {
+	const id = req.params.id;
+
+	projectDB
+		.getProjectActions(id)
+		.then((action) => {
+			if (!action) {
+				return res
+					.status(404)
+					.json({ Error: 'Could not find action for this project.' });
+			} else return res.status(200).json(action);
+		})
+		.catch(() => {
+			return res
+				.status(500)
+				.json({ Error: 'Unable to get action information.' });
+		});
+});
+
+server.post('/api/actions/', (req, res) => {
+	/* const projectId = req.params.projectId; */
+	const newAction = {
+		project_id: req.body.project_id,
+		description: req.body.description,
+		notes: req.body.notes,
+	};
+
+	actionDB
+		.insert(newAction)
+		.then((action) => {
+			return res.status(201).json(action);
+		})
+		.catch(() => {
+			return res.status(500).json({ Error: 'Error while saving action.' });
+		});
+});
+
+server.put('/api/actions/:id', (req, res) => {
+	const id = req.params.id;
+	const updateAction = req.body;
+	actionDB
+		.update(id, updateAction)
+		.then((action) => {
+			res.status(200).json(action);
+		})
+		.catch(() => {
+			res.status(500).json({ Error: 'Unable to update project.' });
+		});
+});
+
+server.delete('/api/actions/:id', (req, res) => {
+	const id = req.params.id;
+
+	if (!id) {
+		return res.status(404).json({ Error: 'This ID does not exist.' });
+	}
+
+	actionDB.remove(id).then((removeAction) => {
+		return action.status(200).json({ Error: 'Cannot remove this action' });
+	});
 });
