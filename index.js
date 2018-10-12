@@ -23,3 +23,117 @@ const port = process.env.PORT || 8000;
 server.listen(port, () => {
 	console.log(`\n=== API running on port ${port} ===\n`);
 });
+
+// Projects
+server.get('/api/projects', (req, res) => {
+	projectDB
+		.get()
+		.then((projects) => {
+			return res.status(200).json(projects);
+		})
+		.catch(() => {
+			return res.status(500).json({ Error: 'No project listing.' });
+		});
+});
+
+server.post('/api/projects', (req, res) => {
+	const projectName = req.body.name;
+	const projectDesc = req.body.description;
+	const projectComp = req.body.completed;
+	const newProject = { projectName, projectDesc, projectComp };
+
+	if (!newProject.projectName || !newProject.projectDesc) {
+		return res
+			.status(400)
+			.send({ Error: 'Missing project name or project description.' });
+	}
+
+	projectDB
+		.insert(newProject)
+		.then((project) => {
+			projectDB.get(project.id).then((project) => {
+				return res.status(201).json(project);
+			});
+		})
+		.catch(() => {
+			return res.status(500).json({ Error: 'Error while saving project.' });
+		});
+});
+
+server.delete('/api/projects/:id', (req, res) => {
+	const id = req.params.id;
+
+	if (!id) {
+		return res
+			.status(404)
+			.json({ Error: `Cannot find a project with this id ${id}` });
+	}
+
+	projectDB
+		.remove(id)
+		.then((deleteProject) => {
+			return res.status(200).json(deleteProject);
+		})
+		.catch(() => {
+			return res.status(500).json({ Error: 'Cannot delete this project!' });
+		});
+});
+
+server.put('/api/projects/:id', (req, res) => {
+	const id = req.params.id;
+	const projectName = req.body.name;
+	const projectDesc = req.body.description;
+	const projectComp = req.body.completed;
+	const updateProject = { projectName, projectDesc, projectComp };
+
+	if (!id) {
+		return response
+			.status(404)
+			.send({ Error: `Project with this ID ${id} is not found` });
+	} else if (!updatedProject.name || !updatedProject.description) {
+		return response
+			.status(400)
+			.send({
+				Error: 'Project name or description is missing please correct.',
+			});
+	}
+
+	projectDB
+		.update(id, updateProject)
+		.then((project) => {
+			return res.status(200).json(project);
+		})
+		.catch(() => {
+			return res.status(500).json({ Error: 'Unable to update the project.' });
+		});
+});
+
+// Action
+
+server.get('/api/actions', (req, res) => {
+	actionDB
+		.get()
+		.then((actions) => {
+			return res.status(200).json(actions);
+		})
+		.catch(() => {
+			return res.status(500).json({ Error: 'List of actions not found.' });
+		});
+});
+
+server.get('/api/actions/:id', (req, res) => {
+	const id = req.params.id;
+
+	actionDB
+		.get(id)
+		.then((action) => {
+			if (!action) {
+				return res.status(404).json({ Error: 'Could not find action.' });
+			} else return res.status(200).json(action);
+		})
+		.catch(() => {
+			return res
+				.status(500)
+				.json({ Error: 'Unable to get action information.' });
+		});
+});
